@@ -6,8 +6,9 @@
 //  Copyright (c) 2015 Katsuma Tanaka. All rights reserved.
 //
 
-#import "QBAlbumsViewController.h"
 #import <Photos/Photos.h>
+
+#import "QBAlbumsViewController.h"
 
 // Views
 #import "QBAlbumCell.h"
@@ -368,24 +369,24 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (void)photoLibraryDidChange:(PHChange *)changeInstance
 {
+    __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
-        // Update fetch results
-        NSMutableArray *fetchResults = [self.fetchResults mutableCopy];
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        NSMutableArray *fetchResults = [strongSelf.fetchResults mutableCopy];
         
-        [self.fetchResults enumerateObjectsUsingBlock:^(PHFetchResult *fetchResult, NSUInteger index, BOOL *stop) {
+        [strongSelf.fetchResults enumerateObjectsUsingBlock:^(PHFetchResult *fetchResult, NSUInteger index, BOOL *stop) {
             PHFetchResultChangeDetails *changeDetails = [changeInstance changeDetailsForFetchResult:fetchResult];
-            
             if (changeDetails) {
                 [fetchResults replaceObjectAtIndex:index withObject:changeDetails.fetchResultAfterChanges];
             }
         }];
         
-        if (![self.fetchResults isEqualToArray:fetchResults]) {
-            self.fetchResults = fetchResults;
+        if (![strongSelf.fetchResults isEqualToArray:fetchResults]) {
+            strongSelf.fetchResults = fetchResults;
             
             // Reload albums
-            [self updateAssetCollections];
-            [self.tableView reloadData];
+            [strongSelf updateAssetCollections];
+            [strongSelf.tableView reloadData];
         }
     });
 }

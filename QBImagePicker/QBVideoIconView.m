@@ -10,13 +10,27 @@
 
 @implementation QBVideoIconView
 
-- (void)awakeFromNib
-{
-    [super awakeFromNib];
-    
-    // Set default values
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self setupDefaults];
+    }
+    return self;
+}
+
+- (void)setupDefaults {
     self.iconColor = [UIColor whiteColor];
 }
+
+#pragma mark - Properties
+
+- (void)setIconColor:(UIColor *)iconColor
+{
+    _iconColor = iconColor;
+    [self setNeedsDisplay];
+}
+
+#pragma mark - Drawing
 
 - (void)drawRect:(CGRect)rect
 {

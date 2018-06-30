@@ -6,17 +6,20 @@
 //  Copyright (c) 2015 Katsuma Tanaka. All rights reserved.
 //
 
-#import "QBImagePickerController.h"
 #import <Photos/Photos.h>
+
+#import "QBImagePickerController.h"
 
 // ViewControllers
 #import "QBAlbumsViewController.h"
 
 @interface QBImagePickerController ()
 
-@property (nonatomic, strong) UINavigationController *albumsNavigationController;
+@property (nonatomic, strong, readwrite) NSBundle *assetBundle;
+@property (nonatomic, strong, readwrite) NSMutableOrderedSet *selectedAssets;
 
-@property (nonatomic, strong) NSBundle *assetBundle;
+@property (nonatomic, weak) QBAlbumsViewController *albumsViewController;
+@property (nonatomic, weak) UINavigationController *albumsNavigationController;
 
 @end
 
@@ -25,53 +28,51 @@
 - (instancetype)init
 {
     self = [super init];
-    
     if (self) {
-        // Set default values
-        self.assetCollectionSubtypes = @[
-                                         @(PHAssetCollectionSubtypeSmartAlbumUserLibrary),
-                                         @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
-                                         @(PHAssetCollectionSubtypeSmartAlbumPanoramas),
-                                         @(PHAssetCollectionSubtypeSmartAlbumVideos),
-                                         @(PHAssetCollectionSubtypeSmartAlbumBursts)
-                                         ];
-        self.minimumNumberOfSelection = 1;
-        self.numberOfColumnsInPortrait = 4;
-        self.numberOfColumnsInLandscape = 7;
-        
-        _selectedAssets = [NSMutableOrderedSet orderedSet];
-        
-        // Get asset bundle
-        self.assetBundle = [NSBundle bundleForClass:[self class]];
-        NSString *bundlePath = [self.assetBundle pathForResource:@"QBImagePicker" ofType:@"bundle"];
-        if (bundlePath) {
-            self.assetBundle = [NSBundle bundleWithPath:bundlePath];
-        }
-        
-        [self setUpAlbumsViewController];
-        
-        // Set instance
-        QBAlbumsViewController *albumsViewController = (QBAlbumsViewController *)self.albumsNavigationController.topViewController;
-        albumsViewController.imagePickerController = self;
+        [self setupDefaults];
+        [self setupAlbumsViewController];
     }
-    
     return self;
 }
 
-- (void)setUpAlbumsViewController
+- (void)setupDefaults
 {
-    // Add QBAlbumsViewController as a child
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"QBImagePicker" bundle:self.assetBundle];
+    self.minimumNumberOfSelection = 1;
+    self.maximumNumberOfSelection = 0;
+    self.numberOfColumnsInPortrait = 4;
+    self.numberOfColumnsInLandscape = 7;
+    self.creationDateSortOrder = QBImagePickerCreationDateSortOrderAscending;
+    
+    self.selectedAssets = [NSMutableOrderedSet orderedSet];
+    self.assetCollectionSubtypes = @[@(PHAssetCollectionSubtypeSmartAlbumUserLibrary),
+                                     @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
+                                     @(PHAssetCollectionSubtypeSmartAlbumPanoramas),
+                                     @(PHAssetCollectionSubtypeSmartAlbumVideos),
+                                     @(PHAssetCollectionSubtypeSmartAlbumBursts)];
+    
+    self.assetBundle = [NSBundle bundleForClass:[self class]];
+    NSString *bundlePath = [self.assetBundle pathForResource:@"QBImagePicker" ofType:@"bundle"];
+    if (bundlePath) {
+        self.assetBundle = [NSBundle bundleWithPath:bundlePath];
+    }
+}
+
+- (void)setupAlbumsViewController
+{
+    UIStoryboard *storyboard = nil;
+    storyboard = [UIStoryboard storyboardWithName:@"QBImagePicker" bundle:self.assetBundle];
+    
     UINavigationController *navigationController = [storyboard instantiateViewControllerWithIdentifier:@"QBAlbumsNavigationController"];
+    self.albumsNavigationController = navigationController;
     
     [self addChildViewController:navigationController];
-    
     navigationController.view.frame = self.view.bounds;
+    navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:navigationController.view];
-    
     [navigationController didMoveToParentViewController:self];
     
-    self.albumsNavigationController = navigationController;
+    self.albumsViewController = (QBAlbumsViewController *)self.albumsNavigationController.topViewController;
+    self.albumsViewController.imagePickerController = self;
 }
 
 @end

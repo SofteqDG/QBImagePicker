@@ -14,6 +14,7 @@
 {
     [super awakeFromNib];
     
+    // TODO: Gradient layer should be resizable!
     // Add gradient layer
     CAGradientLayer *gradientLayer = [CAGradientLayer layer];
     gradientLayer.frame = self.bounds;

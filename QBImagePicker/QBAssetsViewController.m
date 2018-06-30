@@ -46,8 +46,10 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     NSMutableArray *indexPaths = [NSMutableArray arrayWithCapacity:allLayoutAttributes.count];
     for (UICollectionViewLayoutAttributes *layoutAttributes in allLayoutAttributes) {
-        NSIndexPath *indexPath = layoutAttributes.indexPath;
-        [indexPaths addObject:indexPath];
+        if (layoutAttributes.representedElementCategory == UICollectionElementCategoryCell) {
+            NSIndexPath *indexPath = layoutAttributes.indexPath;
+            [indexPaths addObject:indexPath];
+        }
     }
     return indexPaths;
 }
@@ -232,7 +234,25 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 - (void)updateFetchRequest
 {
     if (self.assetCollection) {
-        PHFetchOptions *options = [PHFetchOptions new];
+        PHFetchOptions *options = [[PHFetchOptions alloc] init];
+        
+        switch (self.imagePickerController.creationDateSortOrder) {
+            case QBImagePickerCreationDateSortOrderAscending: {
+                NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES];
+                options.sortDescriptors = @[sortDescriptor];
+                break;
+            }
+                
+            case QBImagePickerCreationDateSortOrderDescending: {
+                NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO];
+                options.sortDescriptors = @[sortDescriptor];
+                break;
+            }
+                
+            default: {
+                break;
+            }
+        }
         
         switch (self.imagePickerController.mediaType) {
             case QBImagePickerMediaTypeImage:
@@ -386,33 +406,39 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (void)photoLibraryDidChange:(PHChange *)changeInstance
 {
+    __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
-        PHFetchResultChangeDetails *collectionChanges = [changeInstance changeDetailsForFetchResult:self.fetchResult];
-        
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        PHFetchResultChangeDetails *collectionChanges = [changeInstance changeDetailsForFetchResult:strongSelf.fetchResult];
         if (collectionChanges) {
             // Get the new fetch result
-            self.fetchResult = [collectionChanges fetchResultAfterChanges];
-            
+            strongSelf.fetchResult = [collectionChanges fetchResultAfterChanges];
             if (![collectionChanges hasIncrementalChanges] || [collectionChanges hasMoves]) {
                 // We need to reload all if the incremental diffs are not available
-                [self.collectionView reloadData];
+                [strongSelf.collectionView reloadData];
             } else {
                 // If we have incremental diffs, tell the collection view to animate insertions and deletions
-                [self.collectionView performBatchUpdates:^{
+                [strongSelf.collectionView performBatchUpdates:^{
                     NSIndexSet *removedIndexes = [collectionChanges removedIndexes];
                     if ([removedIndexes count]) {
-                        [self.collectionView deleteItemsAtIndexPaths:[removedIndexes qb_indexPathsFromIndexesWithSection:0]];
+                        [strongSelf.collectionView deleteItemsAtIndexPaths:[removedIndexes qb_indexPathsFromIndexesWithSection:0]];
                     }
                     
                     NSIndexSet *insertedIndexes = [collectionChanges insertedIndexes];
                     if ([insertedIndexes count]) {
-                        [self.collectionView insertItemsAtIndexPaths:[insertedIndexes qb_indexPathsFromIndexesWithSection:0]];
+                        [strongSelf.collectionView insertItemsAtIndexPaths:[insertedIndexes qb_indexPathsFromIndexesWithSection:0]];
                     }
                     
                     NSIndexSet *changedIndexes = [collectionChanges changedIndexes];
                     if ([changedIndexes count]) {
-                        [self.collectionView reloadItemsAtIndexPaths:[changedIndexes qb_indexPathsFromIndexesWithSection:0]];
+                        [strongSelf.collectionView reloadItemsAtIndexPaths:[changedIndexes qb_indexPathsFromIndexesWithSection:0]];
                     }
+                    
+                    [collectionChanges enumerateMovesWithBlock:^(NSUInteger fromIndex, NSUInteger toIndex) {
+                        NSIndexPath *toIndexPath = [NSIndexPath indexPathForItem:toIndex inSection:0];
+                        NSIndexPath *fromIndexPath = [NSIndexPath indexPathForItem:fromIndex inSection:0];
+                        [strongSelf.collectionView moveItemAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
+                    }];
                 } completion:NULL];
             }
             
@@ -428,7 +454,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 {
     [self updateCachedAssets];
 }
-
 
 #pragma mark - UICollectionViewDataSource
 
@@ -548,7 +573,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         return footerView;
     }
     
-    return nil;
+    // Just to silence the static analyzer.
+    return [[UICollectionReusableView alloc] init];
 }
 
 
@@ -649,16 +675,18 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSUInteger numberOfColumns;
-    if (UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])) {
-        numberOfColumns = self.imagePickerController.numberOfColumnsInPortrait;
-    } else {
+    NSUInteger numberOfColumns = self.imagePickerController.numberOfColumnsInPortrait;
+    if (UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation])) {
         numberOfColumns = self.imagePickerController.numberOfColumnsInLandscape;
     }
     
-    CGFloat width = (CGRectGetWidth(self.view.frame) - 2.0 * (numberOfColumns - 1)) / numberOfColumns;
+    UICollectionViewFlowLayout *flowLayout = (UICollectionViewFlowLayout *)collectionViewLayout;
+    UIEdgeInsets sectionInsets = flowLayout.sectionInset;
     
-    return CGSizeMake(width, width);
+    CGFloat maxWidth = CGRectGetWidth(collectionView.frame) - sectionInsets.right - sectionInsets.left;
+    CGFloat itemWidth = (maxWidth - (flowLayout.minimumInteritemSpacing * numberOfColumns - 1)) / numberOfColumns;
+    
+    return CGSizeMake(itemWidth, itemWidth);
 }
 
 @end
