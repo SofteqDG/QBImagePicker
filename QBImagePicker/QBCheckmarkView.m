@@ -10,11 +10,26 @@
 
 @implementation QBCheckmarkView
 
-- (void)awakeFromNib
+- (instancetype)initWithFrame:(CGRect)frame
 {
-    [super awakeFromNib];
-    
-    // Set default values
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setupDefaults];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self setupDefaults];
+    }
+    return self;
+}
+
+- (void)setupDefaults
+{
     self.borderWidth = 1.0;
     self.checkmarkLineWidth = 1.2;
     
@@ -22,12 +37,13 @@
     self.bodyColor = [UIColor colorWithRed:(20.0 / 255.0) green:(111.0 / 255.0) blue:(223.0 / 255.0) alpha:1.0];
     self.checkmarkColor = [UIColor whiteColor];
     
-    // Set shadow
     self.layer.shadowColor = [[UIColor grayColor] CGColor];
     self.layer.shadowOffset = CGSizeMake(0, 0);
     self.layer.shadowOpacity = 0.6;
     self.layer.shadowRadius = 2.0;
 }
+
+#pragma mark - Drawing
 
 - (void)drawRect:(CGRect)rect
 {

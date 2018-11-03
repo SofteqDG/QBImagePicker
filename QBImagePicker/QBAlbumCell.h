@@ -10,11 +10,11 @@
 
 @interface QBAlbumCell : UITableViewCell
 
-@property (weak, nonatomic) IBOutlet UIImageView *imageView1;
-@property (weak, nonatomic) IBOutlet UIImageView *imageView2;
-@property (weak, nonatomic) IBOutlet UIImageView *imageView3;
-@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
-@property (weak, nonatomic) IBOutlet UILabel *countLabel;
+@property (nonatomic, weak) IBOutlet UIImageView *imageView1;
+@property (nonatomic, weak) IBOutlet UIImageView *imageView2;
+@property (nonatomic, weak) IBOutlet UIImageView *imageView3;
+@property (nonatomic, weak) IBOutlet UILabel *titleLabel;
+@property (nonatomic, weak) IBOutlet UILabel *countLabel;
 
 @property (nonatomic, assign) CGFloat borderWidth;
 

@@ -140,8 +140,9 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     [self.collectionViewLayout invalidateLayout];
     
     // Restore scroll position
+    __weak typeof(self) weakSelf = self;
     [coordinator animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
+        [weakSelf.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
     }];
 }
 
@@ -150,7 +151,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     // Deregister observer
     [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
 }
-
 
 #pragma mark - Accessors
 
@@ -165,7 +165,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 - (PHCachingImageManager *)imageManager
 {
     if (_imageManager == nil) {
-        _imageManager = [PHCachingImageManager new];
+        _imageManager = [[PHCachingImageManager alloc] init];
     }
     
     return _imageManager;
@@ -682,8 +682,17 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     UICollectionViewFlowLayout *flowLayout = (UICollectionViewFlowLayout *)collectionViewLayout;
     UIEdgeInsets sectionInsets = flowLayout.sectionInset;
     
-    CGFloat maxWidth = CGRectGetWidth(collectionView.frame) - sectionInsets.right - sectionInsets.left;
-    CGFloat itemWidth = (maxWidth - (flowLayout.minimumInteritemSpacing * numberOfColumns - 1)) / numberOfColumns;
+    UIEdgeInsets safeAreaInsets = UIEdgeInsetsZero;
+    if (@available(iOS 11.0, *)) {
+        safeAreaInsets = collectionView.safeAreaInsets;
+    }
+    
+    CGFloat contentWidth = CGRectGetMaxX(collectionView.frame);
+    contentWidth -= (safeAreaInsets.left + safeAreaInsets.right);
+    contentWidth -= (sectionInsets.left + sectionInsets.right);
+    
+    CGFloat spacingWidth = flowLayout.minimumInteritemSpacing * (numberOfColumns - 1);
+    CGFloat itemWidth = (contentWidth - spacingWidth) / numberOfColumns;
     
     return CGSizeMake(itemWidth, itemWidth);
 }

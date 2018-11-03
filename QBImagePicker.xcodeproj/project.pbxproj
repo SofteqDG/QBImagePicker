@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1ACD48CA218DEE7200288636 /* QBGradientView.h in Headers */ = {isa = PBXBuildFile; fileRef = 1ACD48C8218DEE7200288636 /* QBGradientView.h */; };
+		1ACD48CB218DEE7200288636 /* QBGradientView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1ACD48C9218DEE7200288636 /* QBGradientView.m */; };
 		790A850F1AE7D4D9008E2A80 /* QBSlomoIconView.h in Headers */ = {isa = PBXBuildFile; fileRef = 790A850D1AE7D4D9008E2A80 /* QBSlomoIconView.h */; };
 		790A85101AE7D4D9008E2A80 /* QBSlomoIconView.m in Sources */ = {isa = PBXBuildFile; fileRef = 790A850E1AE7D4D9008E2A80 /* QBSlomoIconView.m */; };
 		AA3AD06F1ACF9A3A00BF523E /* QBVideoIconView.h in Headers */ = {isa = PBXBuildFile; fileRef = AA3AD06D1ACF9A3A00BF523E /* QBVideoIconView.h */; };
@@ -81,6 +83,8 @@
 
 /* Begin PBXFileReference section */
 		07A50A481B331A840010E048 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
+		1ACD48C8218DEE7200288636 /* QBGradientView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QBGradientView.h; sourceTree = "<group>"; };
+		1ACD48C9218DEE7200288636 /* QBGradientView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QBGradientView.m; sourceTree = "<group>"; };
 		74BB93661B2CE91A0044EB60 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
 		790A850D1AE7D4D9008E2A80 /* QBSlomoIconView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QBSlomoIconView.h; sourceTree = "<group>"; };
 		790A850E1AE7D4D9008E2A80 /* QBSlomoIconView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QBSlomoIconView.m; sourceTree = "<group>"; };
@@ -169,6 +173,8 @@
 				AAF1CA321ACE6FB5005F6295 /* QBAssetCell.m */,
 				AABBF08E1ACEDDFF003188A3 /* QBCheckmarkView.h */,
 				AABBF08F1ACEDDFF003188A3 /* QBCheckmarkView.m */,
+				1ACD48C8218DEE7200288636 /* QBGradientView.h */,
+				1ACD48C9218DEE7200288636 /* QBGradientView.m */,
 				AA3AD06D1ACF9A3A00BF523E /* QBVideoIconView.h */,
 				AA3AD06E1ACF9A3A00BF523E /* QBVideoIconView.m */,
 				790A850D1AE7D4D9008E2A80 /* QBSlomoIconView.h */,
@@ -319,6 +325,7 @@
 				790A850F1AE7D4D9008E2A80 /* QBSlomoIconView.h in Headers */,
 				AA3AD0731ACFA06700BF523E /* QBVideoIndicatorView.h in Headers */,
 				AAF1CA331ACE6FB5005F6295 /* QBAssetCell.h in Headers */,
+				1ACD48CA218DEE7200288636 /* QBGradientView.h in Headers */,
 				AAF1CA2F1ACE6E46005F6295 /* QBAssetsViewController.h in Headers */,
 				AAF1CA1A1ACE5467005F6295 /* QBAlbumCell.h in Headers */,
 				AAA8FE5B1ACDA554002A9710 /* QBAlbumsViewController.h in Headers */,
@@ -497,6 +504,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAF1CA341ACE6FB5005F6295 /* QBAssetCell.m in Sources */,
+				1ACD48CB218DEE7200288636 /* QBGradientView.m in Sources */,
 				AA3AD0701ACF9A3A00BF523E /* QBVideoIconView.m in Sources */,
 				790A85101AE7D4D9008E2A80 /* QBSlomoIconView.m in Sources */,
 				AABBF0911ACEDDFF003188A3 /* QBCheckmarkView.m in Sources */,
@@ -636,7 +644,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE = "";
@@ -689,7 +697,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
@@ -795,7 +803,6 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = QBImagePickerDemoTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -808,7 +815,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				INFOPLIST_FILE = QBImagePickerDemoTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
