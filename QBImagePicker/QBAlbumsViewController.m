@@ -21,12 +21,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     return CGSizeMake(size.width * scale, size.height * scale);
 }
 
-@interface QBImagePickerController (Private)
-
-@property (nonatomic, strong) NSBundle *assetBundle;
-
-@end
-
 @interface QBAlbumsViewController () <PHPhotoLibraryChangeObserver>
 
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *doneButton;
@@ -60,7 +54,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     [super viewWillAppear:animated];
     
     // Configure navigation item
-    self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"albums.title", @"QBImagePicker", self.imagePickerController.assetBundle, nil);
+    NSBundle *bundle = [NSBundle bundleForClass:[QBAlbumsViewController class]];
+    self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"albums.title", @"QBImagePicker", bundle, nil);
     self.navigationItem.prompt = self.imagePickerController.prompt;
     
     // Show/hide 'Done' button
@@ -132,7 +127,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     NSMutableOrderedSet *selectedAssets = self.imagePickerController.selectedAssets;
     
     if (selectedAssets.count > 0) {
-        NSBundle *bundle = self.imagePickerController.assetBundle;
+        NSBundle *bundle = [NSBundle bundleForClass:[QBAlbumsViewController class]];
         NSString *format;
         if (selectedAssets.count > 1) {
             format = NSLocalizedStringFromTableInBundle(@"assets.toolbar.items-selected", @"QBImagePicker", bundle, nil);
@@ -287,16 +282,19 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     PHFetchOptions *options = [[PHFetchOptions alloc] init];
     
     switch (self.imagePickerController.mediaType) {
-        case QBImagePickerMediaTypeImage:
+        case QBImagePickerMediaTypeImage: {
             options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
             break;
+        }
             
-        case QBImagePickerMediaTypeVideo:
+        case QBImagePickerMediaTypeVideo: {
             options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
             break;
+        }
             
-        default:
+        default: {
             break;
+        }
     }
     
     PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:options];

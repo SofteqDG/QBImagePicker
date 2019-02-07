@@ -15,11 +15,9 @@
 
 @interface QBImagePickerController ()
 
-@property (nonatomic, strong, readwrite) NSBundle *assetBundle;
 @property (nonatomic, strong, readwrite) NSMutableOrderedSet *selectedAssets;
-
-@property (nonatomic, weak) QBAlbumsViewController *albumsViewController;
-@property (nonatomic, weak) UINavigationController *albumsNavigationController;
+@property (nonatomic, weak, readwrite) QBAlbumsViewController *albumsViewController;
+@property (nonatomic, weak, readwrite) UINavigationController *albumsNavigationController;
 
 @end
 
@@ -43,24 +41,22 @@
     self.numberOfColumnsInLandscape = 7;
     self.creationDateSortOrder = QBImagePickerCreationDateSortOrderAscending;
     
+    self.allowsMultipleSelection = YES;
+    self.allowsMultipleSelectionWithGestures = YES;
+    self.gesturesSelectionStyle = QBImagePickerGesturesSelectionStyleAlwaysChangeState;
+    
     self.selectedAssets = [NSMutableOrderedSet orderedSet];
     self.assetCollectionSubtypes = @[@(PHAssetCollectionSubtypeSmartAlbumUserLibrary),
                                      @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
                                      @(PHAssetCollectionSubtypeSmartAlbumPanoramas),
                                      @(PHAssetCollectionSubtypeSmartAlbumVideos),
                                      @(PHAssetCollectionSubtypeSmartAlbumBursts)];
-    
-    self.assetBundle = [NSBundle bundleForClass:[self class]];
-    NSString *bundlePath = [self.assetBundle pathForResource:@"QBImagePicker" ofType:@"bundle"];
-    if (bundlePath) {
-        self.assetBundle = [NSBundle bundleWithPath:bundlePath];
-    }
 }
 
 - (void)setupAlbumsViewController
 {
-    UIStoryboard *storyboard = nil;
-    storyboard = [UIStoryboard storyboardWithName:@"QBImagePicker" bundle:self.assetBundle];
+    NSBundle *bundle = [NSBundle bundleForClass:[QBImagePickerController class]];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"QBImagePicker" bundle:bundle];
     
     UINavigationController *navigationController = [storyboard instantiateViewControllerWithIdentifier:@"QBAlbumsNavigationController"];
     self.albumsNavigationController = navigationController;

@@ -10,10 +10,26 @@
 
 @implementation QBVideoIndicatorView
 
-- (void)awakeFromNib
+- (instancetype)initWithFrame:(CGRect)frame
 {
-    [super awakeFromNib];
-    
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setupDefaults];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self setupDefaults];
+    }
+    return self;
+}
+
+- (void)setupDefaults
+{
     self.gradientView.gradientLayer.colors = @[
                                                (__bridge id)[[UIColor clearColor] CGColor],
                                                (__bridge id)[[UIColor blackColor] CGColor]

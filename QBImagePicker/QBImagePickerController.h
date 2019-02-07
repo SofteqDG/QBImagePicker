@@ -35,6 +35,11 @@ typedef NS_ENUM(NSUInteger, QBImagePickerCreationDateSortOrder) {
     QBImagePickerCreationDateSortOrderDescending
 };
 
+typedef NS_ENUM(NSUInteger, QBImagePickerGesturesSelectionStyle) {
+    QBImagePickerGesturesSelectionStyleAlwaysChangeState = 0,
+    QBImagePickerGesturesSelectionStyleUseFirstStateChange
+};
+
 @interface QBImagePickerController : UIViewController
 
 @property (nonatomic, weak, readwrite) id<QBImagePickerControllerDelegate> delegate;
@@ -45,6 +50,9 @@ typedef NS_ENUM(NSUInteger, QBImagePickerCreationDateSortOrder) {
 @property (nonatomic, assign) QBImagePickerCreationDateSortOrder creationDateSortOrder;
 
 @property (nonatomic, assign) BOOL allowsMultipleSelection;
+@property (nonatomic, assign) BOOL allowsMultipleSelectionWithGestures;
+@property (nonatomic, assign) QBImagePickerGesturesSelectionStyle gesturesSelectionStyle;
+
 @property (nonatomic, assign) NSUInteger minimumNumberOfSelection;
 @property (nonatomic, assign) NSUInteger maximumNumberOfSelection;
 

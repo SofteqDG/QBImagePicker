@@ -18,12 +18,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     return CGSizeMake(size.width * scale, size.height * scale);
 }
 
-@interface QBImagePickerController (Private)
-
-@property (nonatomic, strong) NSBundle *assetBundle;
-
-@end
-
 @implementation NSIndexSet (Convenience)
 
 - (NSArray *)qb_indexPathsFromIndexesWithSection:(NSUInteger)section
@@ -56,12 +50,15 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 @end
 
-@interface QBAssetsViewController () <PHPhotoLibraryChangeObserver, UICollectionViewDelegateFlowLayout>
+@interface QBAssetsViewController () <PHPhotoLibraryChangeObserver, UICollectionViewDelegateFlowLayout, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *doneButton;
 
-@property (nonatomic, strong) PHFetchResult *fetchResult;
+@property (nonatomic, strong) IBOutlet UILongPressGestureRecognizer *longPressGestureRecognizer;
+@property (nonatomic, strong) NSIndexPath *lastProcessedCellIndexPath;
+@property (nonatomic, assign) BOOL firstProcessedCellWasSelected;
 
+@property (nonatomic, strong) PHFetchResult *fetchResult;
 @property (nonatomic, strong) PHCachingImageManager *imageManager;
 @property (nonatomic, assign) CGRect previousPreheatRect;
 
@@ -102,7 +99,11 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }
     
     [self updateDoneButtonState];
-    [self updateSelectionInfo];
+    if (self.imagePickerController.showsNumberOfSelectedAssets) {
+        [self updateSelectionInfo];
+        [self updateToolbar];
+    }
+    
     [self.collectionView reloadData];
     
     // Scroll to bottom
@@ -212,7 +213,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     NSMutableOrderedSet *selectedAssets = self.imagePickerController.selectedAssets;
     
     if (selectedAssets.count > 0) {
-        NSBundle *bundle = self.imagePickerController.assetBundle;
+        NSBundle *bundle = [NSBundle bundleForClass:[QBAssetsViewController class]];
         NSString *format;
         if (selectedAssets.count > 1) {
             format = NSLocalizedStringFromTableInBundle(@"assets.toolbar.items-selected", @"QBImagePicker", bundle, nil);
@@ -224,6 +225,13 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         [(UIBarButtonItem *)self.toolbarItems[1] setTitle:title];
     } else {
         [(UIBarButtonItem *)self.toolbarItems[1] setTitle:@""];
+    }
+}
+
+- (void)updateToolbar {
+    BOOL hidden = (self.imagePickerController.selectedAssets.count < 1);
+    if (self.navigationController.toolbarHidden != hidden) {
+        [self.navigationController setToolbarHidden:hidden animated:YES];
     }
 }
 
@@ -254,16 +262,19 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         }
         
         switch (self.imagePickerController.mediaType) {
-            case QBImagePickerMediaTypeImage:
+            case QBImagePickerMediaTypeImage: {
                 options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
                 break;
+            }
                 
-            case QBImagePickerMediaTypeVideo:
+            case QBImagePickerMediaTypeVideo: {
                 options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
                 break;
+            }
                 
-            default:
+            default: {
                 break;
+            }
         }
         
         self.fetchResult = [PHAsset fetchAssetsInAssetCollection:self.assetCollection options:options];
@@ -315,7 +326,9 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 - (void)updateCachedAssets
 {
     BOOL isViewVisible = [self isViewLoaded] && self.view.window != nil;
-    if (!isViewVisible) { return; }
+    if (!isViewVisible) {
+        return;
+    }
     
     // The preheat window is twice the height of the visible rect
     CGRect preheatRect = self.collectionView.bounds;
@@ -388,7 +401,9 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (NSArray *)assetsAtIndexPaths:(NSArray *)indexPaths
 {
-    if (indexPaths.count == 0) { return nil; }
+    if (indexPaths.count == 0) {
+        return nil;
+    }
     
     NSMutableArray *assets = [NSMutableArray arrayWithCapacity:indexPaths.count];
     for (NSIndexPath *indexPath in indexPaths) {
@@ -398,6 +413,20 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         }
     }
     return assets;
+}
+
+- (BOOL)shouldSelectAssetAtIndexPath:(NSIndexPath *)indexPath
+{
+    if ([self.imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerController:shouldSelectAsset:)]) {
+        PHAsset *asset = self.fetchResult[indexPath.item];
+        return [self.imagePickerController.delegate qb_imagePickerController:self.imagePickerController shouldSelectAsset:asset];
+    }
+    
+    if ([self isAutoDeselectEnabled]) {
+        return YES;
+    }
+    
+    return ![self isMaximumSelectionLimitReached];
 }
 
 
@@ -528,13 +557,12 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         // Number of assets
         UILabel *label = (UILabel *)[footerView viewWithTag:1];
         
-        NSBundle *bundle = self.imagePickerController.assetBundle;
+        NSBundle *bundle = [NSBundle bundleForClass:[QBAssetsViewController class]];
         NSUInteger numberOfPhotos = [self.fetchResult countOfAssetsWithMediaType:PHAssetMediaTypeImage];
         NSUInteger numberOfVideos = [self.fetchResult countOfAssetsWithMediaType:PHAssetMediaTypeVideo];
         
         switch (self.imagePickerController.mediaType) {
-            case QBImagePickerMediaTypeAny:
-            {
+            case QBImagePickerMediaTypeAny: {
                 NSString *format;
                 if (numberOfPhotos == 1) {
                     if (numberOfVideos == 1) {
@@ -549,26 +577,24 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
                 }
                 
                 label.text = [NSString stringWithFormat:format, numberOfPhotos, numberOfVideos];
-            }
                 break;
+            }
                 
-            case QBImagePickerMediaTypeImage:
-            {
+            case QBImagePickerMediaTypeImage: {
                 NSString *key = (numberOfPhotos == 1) ? @"assets.footer.photo" : @"assets.footer.photos";
                 NSString *format = NSLocalizedStringFromTableInBundle(key, @"QBImagePicker", bundle, nil);
                 
                 label.text = [NSString stringWithFormat:format, numberOfPhotos];
-            }
                 break;
+            }
                 
-            case QBImagePickerMediaTypeVideo:
-            {
+            case QBImagePickerMediaTypeVideo: {
                 NSString *key = (numberOfVideos == 1) ? @"assets.footer.video" : @"assets.footer.videos";
                 NSString *format = NSLocalizedStringFromTableInBundle(key, @"QBImagePicker", bundle, nil);
                 
                 label.text = [NSString stringWithFormat:format, numberOfVideos];
-            }
                 break;
+            }
         }
         
         return footerView;
@@ -583,16 +609,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    if ([self.imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerController:shouldSelectAsset:)]) {
-        PHAsset *asset = self.fetchResult[indexPath.item];
-        return [self.imagePickerController.delegate qb_imagePickerController:self.imagePickerController shouldSelectAsset:asset];
-    }
-    
-    if ([self isAutoDeselectEnabled]) {
-        return YES;
-    }
-    
-    return ![self isMaximumSelectionLimitReached];
+    return [self shouldSelectAssetAtIndexPath:indexPath];
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
@@ -622,11 +639,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         
         if (imagePickerController.showsNumberOfSelectedAssets) {
             [self updateSelectionInfo];
-            
-            if (selectedAssets.count == 1) {
-                // Show toolbar
-                [self.navigationController setToolbarHidden:NO animated:YES];
-            }
+            [self updateToolbar];
         }
     } else {
         if ([imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerController:didFinishPickingAssets:)]) {
@@ -659,11 +672,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     if (imagePickerController.showsNumberOfSelectedAssets) {
         [self updateSelectionInfo];
-        
-        if (selectedAssets.count == 0) {
-            // Hide toolbar
-            [self.navigationController setToolbarHidden:YES animated:YES];
-        }
+        [self updateToolbar];
     }
     
     if ([imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerController:didDeselectAsset:)]) {
@@ -697,6 +706,106 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     CGFloat itemWidth = MAX(1.0, (contentWidth - spacingWidth) / numberOfColumns);
     
     return CGSizeMake(itemWidth, itemWidth);
+}
+
+
+#pragma mark - UILongPressGestureRecognizer Action
+
+- (IBAction)longPressGestureRecognizerAction:(UIGestureRecognizer *)sender
+{
+    switch (sender.state) {
+        case UIGestureRecognizerStateBegan: {
+            if (self.lastProcessedCellIndexPath) {
+                return;
+            }
+            
+            self.collectionView.userInteractionEnabled = NO;
+            self.collectionView.scrollEnabled = NO;
+            self.lastProcessedCellIndexPath = nil;
+        }
+        case UIGestureRecognizerStateChanged: {
+            CGPoint pointOnCollectionView = [sender locationInView:self.collectionView];
+            NSIndexPath *cellIndexPath = [self.collectionView indexPathForItemAtPoint:pointOnCollectionView];
+            if (!cellIndexPath || cellIndexPath == self.lastProcessedCellIndexPath) {
+                return;
+            }
+            
+            UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:cellIndexPath];
+            if (!self.lastProcessedCellIndexPath) {
+                self.firstProcessedCellWasSelected = !cell.selected;
+            }
+            self.lastProcessedCellIndexPath = cellIndexPath;
+            
+            switch (self.imagePickerController.gesturesSelectionStyle) {
+                case QBImagePickerGesturesSelectionStyleUseFirstStateChange: {
+                    if (self.firstProcessedCellWasSelected && [self shouldSelectAssetAtIndexPath:cellIndexPath] && !cell.selected) {
+                        [self.collectionView selectItemAtIndexPath:cellIndexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
+                        [self collectionView:self.collectionView didSelectItemAtIndexPath:cellIndexPath];
+                    } else if (!self.firstProcessedCellWasSelected && cell.selected) {
+                        [self.collectionView deselectItemAtIndexPath:cellIndexPath animated:YES];
+                        [self collectionView:self.collectionView didDeselectItemAtIndexPath:cellIndexPath];
+                    }
+                    [self.collectionView scrollToItemAtIndexPath:cellIndexPath atScrollPosition:UICollectionViewScrollPositionCenteredVertically animated:YES];
+                    break;
+                }
+                default: {
+                    if (cell.selected) {
+                        [self.collectionView deselectItemAtIndexPath:cellIndexPath animated:YES];
+                        [self collectionView:self.collectionView didDeselectItemAtIndexPath:cellIndexPath];
+                    } else if ([self shouldSelectAssetAtIndexPath:cellIndexPath]) {
+                        [self.collectionView selectItemAtIndexPath:cellIndexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
+                        [self collectionView:self.collectionView didSelectItemAtIndexPath:cellIndexPath];
+                    }
+                    [self.collectionView scrollToItemAtIndexPath:cellIndexPath atScrollPosition:UICollectionViewScrollPositionCenteredVertically animated:YES];
+                    break;
+                }
+            }
+            break;
+        }
+        default: {
+            if (!self.lastProcessedCellIndexPath) {
+                return;
+            }
+            
+            self.collectionView.userInteractionEnabled = YES;
+            self.collectionView.scrollEnabled = YES;
+            self.lastProcessedCellIndexPath = nil;
+            break;
+        }
+    }
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+    QBImagePickerController *imagePickerController = self.imagePickerController;
+    if (!imagePickerController.allowsMultipleSelection || !imagePickerController.allowsMultipleSelectionWithGestures) {
+        return NO;
+    }
+    
+    CGPoint pointOnCollectionView = [gestureRecognizer locationInView:self.collectionView];
+    NSIndexPath *cellIndexPath = [self.collectionView indexPathForItemAtPoint:pointOnCollectionView];
+    if (!cellIndexPath) {
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return YES;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return NO;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return NO;
 }
 
 @end
