@@ -7,6 +7,7 @@
 //
 
 #import "QBAssetCell.h"
+#import "QBVideoIndicatorView.h"
 
 @interface QBAssetCell ()
 
@@ -15,6 +16,14 @@
 @end
 
 @implementation QBAssetCell
+
+- (void)prepareForReuse
+{
+    [super prepareForReuse];
+    
+    self.imageView.image = nil;
+    self.videoIndicatorView.timeLabel.text = nil;
+}
 
 - (void)setSelected:(BOOL)selected
 {

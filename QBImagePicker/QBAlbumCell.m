@@ -10,6 +10,18 @@
 
 @implementation QBAlbumCell
 
+- (void)prepareForReuse
+{
+    [super prepareForReuse];
+    
+    self.titleLabel.text = nil;
+    self.countLabel.text = nil;
+    
+    self.imageView1.image = nil;
+    self.imageView2.image = nil;
+    self.imageView3.image = nil;
+}
+
 - (void)setBorderWidth:(CGFloat)borderWidth
 {
     _borderWidth = borderWidth;

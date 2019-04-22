@@ -484,7 +484,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
                                 contentMode:PHImageContentModeAspectFill
                                     options:nil
                               resultHandler:^(UIImage *result, NSDictionary *info) {
-                                  if (cell.tag == indexPath.item) {
+                                  if (result != nil && cell.tag == indexPath.item) {
                                       cell.imageView.image = result;
                                   }
                               }];
@@ -694,7 +694,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     contentWidth -= (sectionInsets.left + sectionInsets.right);
     
     CGFloat spacingWidth = flowLayout.minimumInteritemSpacing * (numberOfColumns - 1);
-    CGFloat itemWidth = (contentWidth - spacingWidth) / numberOfColumns;
+    CGFloat itemWidth = MAX(1.0, (contentWidth - spacingWidth) / numberOfColumns);
     
     return CGSizeMake(itemWidth, itemWidth);
 }

@@ -164,10 +164,12 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
             if (subtype == PHAssetCollectionSubtypeAlbumRegular) {
                 [userAlbums addObject:assetCollection];
             } else if ([assetCollectionSubtypes containsObject:@(subtype)]) {
-                if (!smartAlbums[@(subtype)]) {
-                    smartAlbums[@(subtype)] = [NSMutableArray array];
+                NSMutableArray *smartAlbum = smartAlbums[@(subtype)];
+                if (!smartAlbum) {
+                    smartAlbum = [NSMutableArray array];
+                    smartAlbums[@(subtype)] = smartAlbum;
                 }
-                [smartAlbums[@(subtype)] addObject:assetCollection];
+                [smartAlbum addObject:assetCollection];
             }
         }];
     }
@@ -282,7 +284,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     // Thumbnail
     PHAssetCollection *assetCollection = self.assetCollections[indexPath.row];
     
-    PHFetchOptions *options = [PHFetchOptions new];
+    PHFetchOptions *options = [[PHFetchOptions alloc] init];
     
     switch (self.imagePickerController.mediaType) {
         case QBImagePickerMediaTypeImage:
@@ -308,7 +310,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
                                contentMode:PHImageContentModeAspectFill
                                    options:nil
                              resultHandler:^(UIImage *result, NSDictionary *info) {
-                                 if (cell.tag == indexPath.row) {
+                                 if (result != nil && cell.tag == indexPath.row) {
                                      cell.imageView3.image = result;
                                  }
                              }];
@@ -324,7 +326,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
                                contentMode:PHImageContentModeAspectFill
                                    options:nil
                              resultHandler:^(UIImage *result, NSDictionary *info) {
-                                 if (cell.tag == indexPath.row) {
+                                 if (result != nil && cell.tag == indexPath.row) {
                                      cell.imageView2.image = result;
                                  }
                              }];
@@ -333,12 +335,14 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }
     
     if (fetchResult.count >= 1) {
+        cell.imageView1.hidden = NO;
+        
         [imageManager requestImageForAsset:fetchResult[fetchResult.count - 1]
                                 targetSize:CGSizeScale(cell.imageView1.frame.size, [[UIScreen mainScreen] scale])
                                contentMode:PHImageContentModeAspectFill
                                    options:nil
                              resultHandler:^(UIImage *result, NSDictionary *info) {
-                                 if (cell.tag == indexPath.row) {
+                                 if (result != nil && cell.tag == indexPath.row) {
                                      cell.imageView1.image = result;
                                  }
                              }];
@@ -347,6 +351,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     if (fetchResult.count == 0) {
         cell.imageView3.hidden = NO;
         cell.imageView2.hidden = NO;
+        cell.imageView1.hidden = NO;
         
         // Set placeholder image
         UIImage *placeholderImage = [self placeholderImageWithSize:cell.imageView1.frame.size];

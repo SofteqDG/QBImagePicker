@@ -25,7 +25,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    QBImagePickerController *imagePickerController = [QBImagePickerController new];
+    QBImagePickerController *imagePickerController = [[QBImagePickerController alloc] init];
     imagePickerController.delegate = self;
     imagePickerController.mediaType = QBImagePickerMediaTypeAny;
     imagePickerController.allowsMultipleSelection = (indexPath.section == 1);
