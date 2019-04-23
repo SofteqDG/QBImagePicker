@@ -188,6 +188,46 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     self.assetCollections = assetCollections;
 }
 
+- (PHFetchResult<PHAsset *> *)fetchAssetsForCollection:(PHAssetCollection *)collection {
+    PHFetchOptions *options = [[PHFetchOptions alloc] init];
+    
+    switch (self.imagePickerController.creationDateSortOrder) {
+        case QBImagePickerCreationDateSortOrderAscending: {
+            NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES];
+            options.sortDescriptors = @[sortDescriptor];
+            break;
+        }
+            
+        case QBImagePickerCreationDateSortOrderDescending: {
+            NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO];
+            options.sortDescriptors = @[sortDescriptor];
+            break;
+        }
+            
+        default: {
+            break;
+        }
+    }
+    
+    switch (self.imagePickerController.mediaType) {
+        case QBImagePickerMediaTypeImage: {
+            options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+            break;
+        }
+            
+        case QBImagePickerMediaTypeVideo: {
+            options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
+            break;
+        }
+            
+        default: {
+            break;
+        }
+    }
+    
+    return [PHAsset fetchAssetsInAssetCollection:collection options:options];
+}
+
 - (UIImage *)placeholderImageWithSize:(CGSize)size
 {
     UIGraphicsBeginImageContext(size);
@@ -278,26 +318,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     // Thumbnail
     PHAssetCollection *assetCollection = self.assetCollections[indexPath.row];
-    
-    PHFetchOptions *options = [[PHFetchOptions alloc] init];
-    
-    switch (self.imagePickerController.mediaType) {
-        case QBImagePickerMediaTypeImage: {
-            options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-            break;
-        }
-            
-        case QBImagePickerMediaTypeVideo: {
-            options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
-            break;
-        }
-            
-        default: {
-            break;
-        }
-    }
-    
-    PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:options];
+    PHFetchResult *fetchResult = [self fetchAssetsForCollection:assetCollection];
     PHImageManager *imageManager = [PHImageManager defaultManager];
     
     if (fetchResult.count >= 3) {
@@ -375,22 +396,24 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        NSMutableArray *fetchResults = [strongSelf.fetchResults mutableCopy];
+        __block BOOL hasChanges = NO;
         
+        NSMutableArray *fetchResults = [strongSelf.fetchResults mutableCopy];
         [strongSelf.fetchResults enumerateObjectsUsingBlock:^(PHFetchResult *fetchResult, NSUInteger index, BOOL *stop) {
             PHFetchResultChangeDetails *changeDetails = [changeInstance changeDetailsForFetchResult:fetchResult];
             if (changeDetails) {
+                hasChanges = YES;
                 [fetchResults replaceObjectAtIndex:index withObject:changeDetails.fetchResultAfterChanges];
             }
         }];
         
-        if (![strongSelf.fetchResults isEqualToArray:fetchResults]) {
+        if (hasChanges) {
             strongSelf.fetchResults = fetchResults;
-            
-            // Reload albums
             [strongSelf updateAssetCollections];
-            [strongSelf.tableView reloadData];
         }
+        
+        // TODO: Use PHFetchResult for each PHAssetCollection do dermine actual changes.
+        [strongSelf.tableView reloadData];
     });
 }
 
