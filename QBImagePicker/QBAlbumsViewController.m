@@ -66,7 +66,10 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }
     
     [self updateControlState];
-    [self updateSelectionInfo];
+    if (self.imagePickerController.showsNumberOfSelectedAssets) {
+        [self updateSelectionInfo];
+        [self updateToolbar];
+    }
 }
 
 - (void)dealloc
@@ -139,6 +142,13 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         [(UIBarButtonItem *)self.toolbarItems[1] setTitle:title];
     } else {
         [(UIBarButtonItem *)self.toolbarItems[1] setTitle:@""];
+    }
+}
+
+- (void)updateToolbar {
+    BOOL hidden = (self.imagePickerController.selectedAssets.count < 1);
+    if (self.navigationController.toolbarHidden != hidden) {
+        [self.navigationController setToolbarHidden:hidden animated:YES];
     }
 }
 
