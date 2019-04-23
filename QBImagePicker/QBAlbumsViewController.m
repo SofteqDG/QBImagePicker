@@ -32,6 +32,12 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 @implementation QBAlbumsViewController
 
+- (void)dealloc
+{
+    // Deregister observer
+    [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -72,12 +78,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }
 }
 
-- (void)dealloc
-{
-    // Deregister observer
-    [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
-}
-
 
 #pragma mark - Storyboard
 
@@ -93,17 +93,13 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (IBAction)cancel:(id)sender
 {
-    if ([self.imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerControllerDidCancel:)]) {
-        [self.imagePickerController.delegate qb_imagePickerControllerDidCancel:self.imagePickerController];
-    }
+    [self.imagePickerController.delegate qb_imagePickerControllerDidCancel:self.imagePickerController];
 }
 
 - (IBAction)done:(id)sender
 {
-    if ([self.imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerController:didFinishPickingAssets:)]) {
-        [self.imagePickerController.delegate qb_imagePickerController:self.imagePickerController
-                                               didFinishPickingAssets:self.imagePickerController.selectedAssets.array];
-    }
+    NSArray *assets = self.imagePickerController.selectedAssets.array;
+    [self.imagePickerController.delegate qb_imagePickerController:self.imagePickerController didFinishPickingAssets:assets];
 }
 
 

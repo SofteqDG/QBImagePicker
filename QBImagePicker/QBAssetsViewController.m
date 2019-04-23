@@ -69,6 +69,12 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 @implementation QBAssetsViewController
 
+- (void)dealloc
+{
+    // Deregister observer
+    [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -147,12 +153,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }];
 }
 
-- (void)dealloc
-{
-    // Deregister observer
-    [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
-}
-
 #pragma mark - Accessors
 
 - (void)setAssetCollection:(PHAssetCollection *)assetCollection
@@ -183,10 +183,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (IBAction)done:(id)sender
 {
-    if ([self.imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerController:didFinishPickingAssets:)]) {
-        [self.imagePickerController.delegate qb_imagePickerController:self.imagePickerController
-                                               didFinishPickingAssets:self.imagePickerController.selectedAssets.array];
-    }
+    NSArray *assets = self.imagePickerController.selectedAssets.array;
+    [self.imagePickerController.delegate qb_imagePickerController:self.imagePickerController didFinishPickingAssets:assets];
 }
 
 
@@ -647,9 +645,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
             [self updateToolbar];
         }
     } else {
-        if ([imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerController:didFinishPickingAssets:)]) {
-            [imagePickerController.delegate qb_imagePickerController:imagePickerController didFinishPickingAssets:@[asset]];
-        }
+        [imagePickerController.delegate qb_imagePickerController:imagePickerController didFinishPickingAssets:@[asset]];
+        // TODO: Should we return here?
     }
     
     if ([imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerController:didSelectAsset:)]) {

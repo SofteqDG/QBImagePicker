@@ -13,10 +13,11 @@
 
 @protocol QBImagePickerControllerDelegate <NSObject>
 
-@optional
+@required
 - (void)qb_imagePickerController:(QBImagePickerController *)imagePickerController didFinishPickingAssets:(NSArray *)assets;
 - (void)qb_imagePickerControllerDidCancel:(QBImagePickerController *)imagePickerController;
 
+@optional
 - (BOOL)qb_imagePickerController:(QBImagePickerController *)imagePickerController shouldSelectAsset:(PHAsset *)asset;
 - (void)qb_imagePickerController:(QBImagePickerController *)imagePickerController didSelectAsset:(PHAsset *)asset;
 - (void)qb_imagePickerController:(QBImagePickerController *)imagePickerController didDeselectAsset:(PHAsset *)asset;
