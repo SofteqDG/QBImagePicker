@@ -7,10 +7,11 @@
 //
 
 #import "QBAssetsViewController.h"
-#import <Photos/Photos.h>
+
+// ViewControllers
+#import "QBImagePickerController+Private.h"
 
 // Views
-#import "QBImagePickerController.h"
 #import "QBAssetCell.h"
 #import "QBVideoIndicatorView.h"
 
@@ -239,43 +240,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 - (void)updateFetchRequest
 {
     if (self.assetCollection) {
-        PHFetchOptions *options = [[PHFetchOptions alloc] init];
-        
-        switch (self.imagePickerController.creationDateSortOrder) {
-            case QBImagePickerCreationDateSortOrderAscending: {
-                NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES];
-                options.sortDescriptors = @[sortDescriptor];
-                break;
-            }
-                
-            case QBImagePickerCreationDateSortOrderDescending: {
-                NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO];
-                options.sortDescriptors = @[sortDescriptor];
-                break;
-            }
-                
-            default: {
-                break;
-            }
-        }
-        
-        switch (self.imagePickerController.mediaType) {
-            case QBImagePickerMediaTypeImage: {
-                options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-                break;
-            }
-                
-            case QBImagePickerMediaTypeVideo: {
-                options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
-                break;
-            }
-                
-            default: {
-                break;
-            }
-        }
-        
-        self.fetchResult = [PHAsset fetchAssetsInAssetCollection:self.assetCollection options:options];
+        PHFetchOptions *fetchOptions = [self.imagePickerController fetchOptionsForAssets];
+        self.fetchResult = [PHAsset fetchAssetsInAssetCollection:self.assetCollection options:fetchOptions];
         
         if ([self isAutoDeselectEnabled] && self.imagePickerController.selectedAssets.count > 0) {
             // Get index of previous selected asset

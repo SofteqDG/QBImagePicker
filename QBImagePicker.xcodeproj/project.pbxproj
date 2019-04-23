@@ -83,6 +83,7 @@
 
 /* Begin PBXFileReference section */
 		07A50A481B331A840010E048 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
+		1A238CCA226F70FE00007E4D /* QBImagePickerController+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "QBImagePickerController+Private.h"; sourceTree = "<group>"; };
 		1ACD48C8218DEE7200288636 /* QBGradientView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QBGradientView.h; sourceTree = "<group>"; };
 		1ACD48C9218DEE7200288636 /* QBGradientView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QBGradientView.m; sourceTree = "<group>"; };
 		74BB93661B2CE91A0044EB60 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
@@ -188,6 +189,7 @@
 		AA3AD0761ACFA23300BF523E /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				1A238CCA226F70FE00007E4D /* QBImagePickerController+Private.h */,
 				AAA8FE1F1ACDA090002A9710 /* QBImagePickerController.h */,
 				AAA8FE201ACDA090002A9710 /* QBImagePickerController.m */,
 				AAA8FE591ACDA554002A9710 /* QBAlbumsViewController.h */,

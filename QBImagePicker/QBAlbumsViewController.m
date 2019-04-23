@@ -6,16 +6,14 @@
 //  Copyright (c) 2015 Katsuma Tanaka. All rights reserved.
 //
 
-#import <Photos/Photos.h>
-
 #import "QBAlbumsViewController.h"
+
+// ViewControllers
+#import "QBImagePickerController+Private.h"
+#import "QBAssetsViewController.h"
 
 // Views
 #import "QBAlbumCell.h"
-
-// ViewControllers
-#import "QBImagePickerController.h"
-#import "QBAssetsViewController.h"
 
 static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     return CGSizeMake(size.width * scale, size.height * scale);
@@ -45,8 +43,9 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     [self setUpToolbarItems];
     
     // Fetch user albums and smart albums
-    PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
-    PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
+    PHFetchOptions *fetchOptions = [self.imagePickerController fetchOptionsForAssetCollections];
+    PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:fetchOptions];
+    PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:fetchOptions];
     self.fetchResults = @[smartAlbums, userAlbums];
     
     [self updateAssetCollections];
@@ -154,6 +153,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 - (void)updateAssetCollections
 {
     // Filter albums
+    BOOL excludeEmptyCollections = self.imagePickerController.excludeEmptyCollections;
     NSArray *assetCollectionSubtypes = self.imagePickerController.assetCollectionSubtypes;
     NSMutableDictionary *smartAlbums = [NSMutableDictionary dictionaryWithCapacity:assetCollectionSubtypes.count];
     NSMutableArray *userAlbums = [NSMutableArray array];
@@ -163,14 +163,18 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
             PHAssetCollectionSubtype subtype = assetCollection.assetCollectionSubtype;
             
             if (subtype == PHAssetCollectionSubtypeAlbumRegular) {
-                [userAlbums addObject:assetCollection];
+                if (!excludeEmptyCollections || ![self isAssetCollectionEmpty:assetCollection]) {
+                    [userAlbums addObject:assetCollection];
+                }
             } else if ([assetCollectionSubtypes containsObject:@(subtype)]) {
                 NSMutableArray *smartAlbum = smartAlbums[@(subtype)];
                 if (!smartAlbum) {
                     smartAlbum = [NSMutableArray array];
                     smartAlbums[@(subtype)] = smartAlbum;
                 }
-                [smartAlbum addObject:assetCollection];
+                if (!excludeEmptyCollections || ![self isAssetCollectionEmpty:assetCollection]) {
+                    [smartAlbum addObject:assetCollection];
+                }
             }
         }];
     }
@@ -194,44 +198,10 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     self.assetCollections = assetCollections;
 }
 
-- (PHFetchResult<PHAsset *> *)fetchAssetsForCollection:(PHAssetCollection *)collection {
-    PHFetchOptions *options = [[PHFetchOptions alloc] init];
-    
-    switch (self.imagePickerController.creationDateSortOrder) {
-        case QBImagePickerCreationDateSortOrderAscending: {
-            NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES];
-            options.sortDescriptors = @[sortDescriptor];
-            break;
-        }
-            
-        case QBImagePickerCreationDateSortOrderDescending: {
-            NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO];
-            options.sortDescriptors = @[sortDescriptor];
-            break;
-        }
-            
-        default: {
-            break;
-        }
-    }
-    
-    switch (self.imagePickerController.mediaType) {
-        case QBImagePickerMediaTypeImage: {
-            options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-            break;
-        }
-            
-        case QBImagePickerMediaTypeVideo: {
-            options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
-            break;
-        }
-            
-        default: {
-            break;
-        }
-    }
-    
-    return [PHAsset fetchAssetsInAssetCollection:collection options:options];
+- (BOOL)isAssetCollectionEmpty:(PHAssetCollection *)assetCollection {
+    PHFetchOptions *fetchOptions = [self.imagePickerController fetchOptionsForAssets];
+    PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:fetchOptions];
+    return (fetchResult.count < 1);
 }
 
 - (UIImage *)placeholderImageWithSize:(CGSize)size
@@ -324,7 +294,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     // Thumbnail
     PHAssetCollection *assetCollection = self.assetCollections[indexPath.row];
-    PHFetchResult *fetchResult = [self fetchAssetsForCollection:assetCollection];
+    PHFetchOptions *fetchOptions = [self.imagePickerController fetchOptionsForAssets];
+    PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:fetchOptions];
     PHImageManager *imageManager = [PHImageManager defaultManager];
     
     if (fetchResult.count >= 3) {

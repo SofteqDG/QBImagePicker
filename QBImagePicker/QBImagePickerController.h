@@ -46,7 +46,9 @@ typedef NS_ENUM(NSUInteger, QBImagePickerGesturesSelectionStyle) {
 @property (nonatomic, weak, readwrite) id<QBImagePickerControllerDelegate> delegate;
 @property (nonatomic, strong, readonly) NSMutableOrderedSet *selectedAssets;
 
+@property (nonatomic, copy) NSArray *assetMediaSubtypes;
 @property (nonatomic, copy) NSArray *assetCollectionSubtypes;
+@property (nonatomic, assign) BOOL excludeEmptyCollections;
 @property (nonatomic, assign) QBImagePickerMediaType mediaType;
 @property (nonatomic, assign) QBImagePickerCreationDateSortOrder creationDateSortOrder;
 
