@@ -12,7 +12,8 @@
 
 #pragma mark - NSCopying
 
-- (instancetype)copyWithZone:(NSZone *)zone {
+- (instancetype)copyWithZone:(NSZone *)zone
+{
     QBAlbumInfo *copiedAlbumInfo = [[QBAlbumInfo alloc] init];
     copiedAlbumInfo.assetCollection = [_assetCollection copyWithZone:zone];
     copiedAlbumInfo.assetsFetchOptions = [_assetCollection copyWithZone:zone];
@@ -22,7 +23,8 @@
 
 #pragma mark - Properties
 
-- (PHFetchResult *)assetsFetchResult {
+- (PHFetchResult *)assetsFetchResult
+{
     if (!_assetsFetchResult) {
         _assetsFetchResult = [PHAsset fetchAssetsInAssetCollection:self.assetCollection options:self.assetsFetchOptions];
     }

@@ -14,6 +14,7 @@
 // Views
 #import "QBAssetCell.h"
 #import "QBVideoIndicatorView.h"
+#import "QBAssetsStatsFooterView.h"
 
 // Model
 #import "QBAlbumInfo.h"
@@ -423,8 +424,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
                 } completion:NULL];
                 
                 NSArray *visibleFooterViews = [strongSelf.collectionView visibleSupplementaryViewsOfKind:UICollectionElementKindSectionFooter];
-                for (UICollectionReusableView *footerView in visibleFooterViews) {
-                    [strongSelf configureFooterView:footerView];
+                for (QBAssetsStatsFooterView *footerView in visibleFooterViews) {
+                    [strongSelf configureAssetsStatsFooterView:footerView];
                 }
             }
             
@@ -506,11 +507,11 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
 {
     if (kind == UICollectionElementKindSectionFooter) {
-        UICollectionReusableView *footerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionFooter
-                                                                                  withReuseIdentifier:@"FooterView"
-                                                                                         forIndexPath:indexPath];
+        QBAssetsStatsFooterView *footerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionFooter
+                                                                                 withReuseIdentifier:@"FooterView"
+                                                                                        forIndexPath:indexPath];
         
-        [self configureFooterView:footerView];
+        [self configureAssetsStatsFooterView:footerView];
         return footerView;
     }
     
@@ -518,7 +519,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     return [[UICollectionReusableView alloc] init];
 }
 
-- (void)configureFooterView:(UICollectionReusableView *)footerView {
+- (void)configureAssetsStatsFooterView:(QBAssetsStatsFooterView *)footerView {
     NSBundle *bundle = [NSBundle bundleForClass:[QBAssetsViewController class]];
     NSUInteger numberOfPhotos = [self.albumInfo.assetsFetchResult countOfAssetsWithMediaType:PHAssetMediaTypeImage];
     NSUInteger numberOfVideos = [self.albumInfo.assetsFetchResult countOfAssetsWithMediaType:PHAssetMediaTypeVideo];
@@ -541,7 +542,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         }
     }
     
-    UILabel *label = (UILabel *)[footerView viewWithTag:1];
+    UILabel *label = footerView.statsLabel;
     if (filterContainsImageMediaType && !filterContainsVideoMediaType) {
         // Only images
         NSString *key = (numberOfPhotos == 1) ? @"assets.footer.photo" : @"assets.footer.photos";

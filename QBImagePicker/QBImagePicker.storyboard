@@ -248,7 +248,7 @@
                                 </connections>
                             </collectionViewCell>
                         </cells>
-                        <collectionReusableView key="sectionFooterView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="FooterView" id="sqR-h3-lW1">
+                        <collectionReusableView key="sectionFooterView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="FooterView" id="sqR-h3-lW1" customClass="QBAssetsStatsFooterView">
                             <rect key="frame" x="0.0" y="81.5" width="375" height="66"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
@@ -264,6 +264,9 @@
                                 <constraint firstAttribute="centerY" secondItem="m2s-7T-bnL" secondAttribute="centerY" id="DrY-pC-Gfi"/>
                                 <constraint firstAttribute="right" secondItem="m2s-7T-bnL" secondAttribute="right" id="lng-sP-3aa"/>
                             </constraints>
+                            <connections>
+                                <outlet property="statsLabel" destination="m2s-7T-bnL" id="BJs-7b-DCB"/>
+                            </connections>
                         </collectionReusableView>
                         <connections>
                             <outlet property="dataSource" destination="QiH-NZ-ZGN" id="PlE-FW-LqS"/>
