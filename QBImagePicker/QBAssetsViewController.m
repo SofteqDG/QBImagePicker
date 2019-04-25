@@ -536,41 +536,47 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     NSUInteger numberOfPhotos = [self.fetchResult countOfAssetsWithMediaType:PHAssetMediaTypeImage];
     NSUInteger numberOfVideos = [self.fetchResult countOfAssetsWithMediaType:PHAssetMediaTypeVideo];
     
+    BOOL filterContainsImageMediaType = NO;
+    BOOL filterContainsVideoMediaType = NO;
+    for (NSNumber *mediaType in self.imagePickerController.assetMediaTypes) {
+        switch (mediaType.integerValue) {
+            case PHAssetMediaTypeImage:
+                filterContainsImageMediaType = YES;
+                break;
+            case PHAssetMediaTypeVideo:
+                filterContainsVideoMediaType = YES;
+                break;
+            default:
+                break;
+        }
+    }
+    
     UILabel *label = (UILabel *)[footerView viewWithTag:1];
-    switch (self.imagePickerController.mediaType) {
-        case QBImagePickerMediaTypeAny: {
-            NSString *format;
-            if (numberOfPhotos == 1) {
-                if (numberOfVideos == 1) {
-                    format = NSLocalizedStringFromTableInBundle(@"assets.footer.photo-and-video", @"QBImagePicker", bundle, nil);
-                } else {
-                    format = NSLocalizedStringFromTableInBundle(@"assets.footer.photo-and-videos", @"QBImagePicker", bundle, nil);
-                }
-            } else if (numberOfVideos == 1) {
-                format = NSLocalizedStringFromTableInBundle(@"assets.footer.photos-and-video", @"QBImagePicker", bundle, nil);
+    if (filterContainsImageMediaType && !filterContainsVideoMediaType) {
+        // Only images
+        NSString *key = (numberOfPhotos == 1) ? @"assets.footer.photo" : @"assets.footer.photos";
+        NSString *format = NSLocalizedStringFromTableInBundle(key, @"QBImagePicker", bundle, nil);
+        label.text = [NSString stringWithFormat:format, numberOfPhotos];
+    } else if (!filterContainsImageMediaType && filterContainsVideoMediaType) {
+        // Only videos
+        NSString *key = (numberOfVideos == 1) ? @"assets.footer.video" : @"assets.footer.videos";
+        NSString *format = NSLocalizedStringFromTableInBundle(key, @"QBImagePicker", bundle, nil);
+        label.text = [NSString stringWithFormat:format, numberOfVideos];
+    } else {
+        // Both images and videos
+        NSString *format;
+        if (numberOfPhotos == 1) {
+            if (numberOfVideos == 1) {
+                format = NSLocalizedStringFromTableInBundle(@"assets.footer.photo-and-video", @"QBImagePicker", bundle, nil);
             } else {
-                format = NSLocalizedStringFromTableInBundle(@"assets.footer.photos-and-videos", @"QBImagePicker", bundle, nil);
+                format = NSLocalizedStringFromTableInBundle(@"assets.footer.photo-and-videos", @"QBImagePicker", bundle, nil);
             }
-            
-            label.text = [NSString stringWithFormat:format, numberOfPhotos, numberOfVideos];
-            break;
+        } else if (numberOfVideos == 1) {
+            format = NSLocalizedStringFromTableInBundle(@"assets.footer.photos-and-video", @"QBImagePicker", bundle, nil);
+        } else {
+            format = NSLocalizedStringFromTableInBundle(@"assets.footer.photos-and-videos", @"QBImagePicker", bundle, nil);
         }
-            
-        case QBImagePickerMediaTypeImage: {
-            NSString *key = (numberOfPhotos == 1) ? @"assets.footer.photo" : @"assets.footer.photos";
-            NSString *format = NSLocalizedStringFromTableInBundle(key, @"QBImagePicker", bundle, nil);
-            
-            label.text = [NSString stringWithFormat:format, numberOfPhotos];
-            break;
-        }
-            
-        case QBImagePickerMediaTypeVideo: {
-            NSString *key = (numberOfVideos == 1) ? @"assets.footer.video" : @"assets.footer.videos";
-            NSString *format = NSLocalizedStringFromTableInBundle(key, @"QBImagePicker", bundle, nil);
-            
-            label.text = [NSString stringWithFormat:format, numberOfVideos];
-            break;
-        }
+        label.text = [NSString stringWithFormat:format, numberOfPhotos, numberOfVideos];
     }
 }
 

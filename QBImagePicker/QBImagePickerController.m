@@ -13,10 +13,10 @@
 
 @interface QBImagePickerController ()
 
-@property (nonatomic, strong, readwrite) PHFetchOptions *assetsFetchOptions;
-@property (nonatomic, strong, readwrite) PHFetchOptions *assetCollectionsFetchOptions;
+@property (nonatomic, strong, readwrite, nullable) PHFetchOptions *assetsFetchOptions;
+@property (nonatomic, strong, readwrite, nullable) PHFetchOptions *assetCollectionsFetchOptions;
 
-@property (nonatomic, strong, readwrite) NSMutableOrderedSet *selectedAssets;
+@property (nonatomic, strong, readwrite) NSMutableOrderedSet<PHAsset *> *selectedAssets;
 @property (nonatomic, weak, readwrite) QBAlbumsViewController *albumsViewController;
 @property (nonatomic, weak, readwrite) UINavigationController *albumsNavigationController;
 
@@ -43,7 +43,6 @@
     self.numberOfColumnsInPortrait = 4;
     self.numberOfColumnsInLandscape = 7;
     
-    self.mediaType = QBImagePickerMediaTypeAny;
     self.creationDateSortOrder = QBImagePickerCreationDateSortOrderAscending;
     self.excludeEmptyCollections = NO;
     
@@ -51,6 +50,7 @@
     self.allowsMultipleSelectionWithGestures = YES;
     self.gesturesSelectionStyle = QBImagePickerGesturesSelectionStyleAlwaysChangeState;
     
+    self.assetMediaTypes = nil;
     self.assetMediaSubtypes = nil;
     self.assetCollectionSubtypes = @[@(PHAssetCollectionSubtypeSmartAlbumUserLibrary),
                                      @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
@@ -102,26 +102,13 @@
             }
         }
         
-        switch (self.mediaType) {
-            case QBImagePickerMediaTypeImage: {
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-                [predicates addObject:predicate];
-                break;
-            }
-                
-            case QBImagePickerMediaTypeVideo: {
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
-                [predicates addObject:predicate];
-                break;
-            }
-                
-            default: {
-                break;
-            }
+        if (self.assetMediaTypes.count) {
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mediaType IN %@", self.assetMediaTypes];
+            [predicates addObject:predicate];
         }
         
         if (self.assetMediaSubtypes.count) {
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mediaSubtype in %@ ", self.assetMediaSubtypes];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mediaSubtype IN %@ ", self.assetMediaSubtypes];
             [predicates addObject:predicate];
         }
         
@@ -137,14 +124,20 @@
     return nil;
 }
 
-- (void)setAssetCollectionSubtypes:(NSArray *)assetCollectionSubtypes {
-    _assetCollectionSubtypes = [assetCollectionSubtypes copy];
+- (void)setAssetMediaTypes:(NSArray<NSNumber *> *)assetMediaTypes {
+    _assetMediaTypes = [assetMediaTypes copy];
     self.assetCollectionsFetchOptions = nil;
     self.assetsFetchOptions = nil;
 }
 
-- (void)setMediaType:(QBImagePickerMediaType)mediaType {
-    _mediaType = mediaType;
+- (void)setAssetMediaSubtypes:(NSArray<NSNumber *> *)assetMediaSubtypes {
+    _assetMediaSubtypes = [assetMediaSubtypes copy];
+    self.assetCollectionsFetchOptions = nil;
+    self.assetsFetchOptions = nil;
+}
+
+- (void)setAssetCollectionSubtypes:(NSArray<NSNumber *> *)assetCollectionSubtypes {
+    _assetCollectionSubtypes = [assetCollectionSubtypes copy];
     self.assetCollectionsFetchOptions = nil;
     self.assetsFetchOptions = nil;
 }
@@ -163,6 +156,19 @@
 
 - (PHFetchOptions *)fetchOptionsForAssetCollections {
     return self.assetCollectionsFetchOptions;
+}
+
+@end
+
+@implementation QBImagePickerController (Deprecated)
+@dynamic mediaType;
+
+- (QBImagePickerMediaType)mediaType {
+    return QBImagePickerMediaTypeAny;
+}
+
+- (void)setMediaType:(QBImagePickerMediaType)mediaType {
+    
 }
 
 @end

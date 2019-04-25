@@ -27,7 +27,7 @@
 {
     QBImagePickerController *imagePickerController = [[QBImagePickerController alloc] init];
     imagePickerController.delegate = self;
-    imagePickerController.mediaType = QBImagePickerMediaTypeAny;
+    imagePickerController.assetMediaTypes = nil;
     imagePickerController.allowsMultipleSelection = (indexPath.section == 1);
     imagePickerController.showsNumberOfSelectedAssets = YES;
     

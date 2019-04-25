@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <Photos/Photos.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class QBImagePickerController;
 
 @protocol QBImagePickerControllerDelegate <NSObject>
@@ -24,12 +26,6 @@
 
 @end
 
-typedef NS_ENUM(NSUInteger, QBImagePickerMediaType) {
-    QBImagePickerMediaTypeAny = 0,
-    QBImagePickerMediaTypeImage,
-    QBImagePickerMediaTypeVideo
-};
-
 typedef NS_ENUM(NSUInteger, QBImagePickerCreationDateSortOrder) {
     QBImagePickerCreationDateSortOrderNone = 0,
     QBImagePickerCreationDateSortOrderAscending,
@@ -43,13 +39,14 @@ typedef NS_ENUM(NSUInteger, QBImagePickerGesturesSelectionStyle) {
 
 @interface QBImagePickerController : UIViewController
 
-@property (nonatomic, weak, readwrite) id<QBImagePickerControllerDelegate> delegate;
-@property (nonatomic, strong, readonly) NSMutableOrderedSet *selectedAssets;
+@property (nonatomic, weak, readwrite, nullable) id<QBImagePickerControllerDelegate> delegate;
+@property (nonatomic, strong, readonly, nonnull) NSMutableOrderedSet<PHAsset *> *selectedAssets;
 
-@property (nonatomic, copy) NSArray *assetMediaSubtypes;
-@property (nonatomic, copy) NSArray *assetCollectionSubtypes;
+@property (nonatomic, copy, readwrite, nullable) NSArray<NSNumber *> *assetMediaTypes;
+@property (nonatomic, copy, readwrite, nullable) NSArray<NSNumber *> *assetMediaSubtypes;
+@property (nonatomic, copy, readwrite, nullable) NSArray<NSNumber *> *assetCollectionSubtypes;
+
 @property (nonatomic, assign) BOOL excludeEmptyCollections;
-@property (nonatomic, assign) QBImagePickerMediaType mediaType;
 @property (nonatomic, assign) QBImagePickerCreationDateSortOrder creationDateSortOrder;
 
 @property (nonatomic, assign) BOOL allowsMultipleSelection;
@@ -59,10 +56,24 @@ typedef NS_ENUM(NSUInteger, QBImagePickerGesturesSelectionStyle) {
 @property (nonatomic, assign) NSUInteger minimumNumberOfSelection;
 @property (nonatomic, assign) NSUInteger maximumNumberOfSelection;
 
-@property (nonatomic, copy) NSString *prompt;
+@property (nonatomic, copy, nullable) NSString *prompt;
 @property (nonatomic, assign) BOOL showsNumberOfSelectedAssets;
 
 @property (nonatomic, assign) NSUInteger numberOfColumnsInPortrait;
 @property (nonatomic, assign) NSUInteger numberOfColumnsInLandscape;
 
 @end
+
+@interface QBImagePickerController (Deprecated)
+
+typedef NS_ENUM(NSUInteger, QBImagePickerMediaType) {
+    QBImagePickerMediaTypeAny = 0,
+    QBImagePickerMediaTypeImage,
+    QBImagePickerMediaTypeVideo
+} DEPRECATED_MSG_ATTRIBUTE("Use 'assetMediaTypes' property");
+
+@property (nonatomic, assign) QBImagePickerMediaType mediaType DEPRECATED_MSG_ATTRIBUTE("Use 'assetMediaTypes' property");
+
+@end
+
+NS_ASSUME_NONNULL_END
