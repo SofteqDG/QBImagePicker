@@ -9,10 +9,12 @@
 #import <UIKit/UIKit.h>
 #import <Photos/Photos.h>
 
+@class QBAlbumInfo;
 @class QBImagePickerController;
 
 @interface QBAlbumsViewController : UITableViewController
 
 @property (nonatomic, weak) QBImagePickerController *imagePickerController;
+@property (nonatomic, weak) QBAlbumInfo *lastSelectedAlbum;
 
 @end

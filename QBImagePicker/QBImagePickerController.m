@@ -90,13 +90,11 @@
                 [sortDescriptors addObject:sortDescriptor];
                 break;
             }
-                
             case QBImagePickerCreationDateSortOrderDescending: {
                 NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO];
                 [sortDescriptors addObject:sortDescriptor];
                 break;
             }
-                
             default: {
                 break;
             }
@@ -164,11 +162,47 @@
 @dynamic mediaType;
 
 - (QBImagePickerMediaType)mediaType {
+    BOOL filterContainsImageMediaType = NO;
+    BOOL filterContainsVideoMediaType = NO;
+    for (NSNumber *mediaType in self.assetMediaTypes) {
+        switch (mediaType.integerValue) {
+            case PHAssetMediaTypeImage: {
+                filterContainsImageMediaType = YES;
+                break;
+            }
+            case PHAssetMediaTypeVideo: {
+                filterContainsVideoMediaType = YES;
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+    
+    if (filterContainsImageMediaType && !filterContainsVideoMediaType) {
+        return QBImagePickerMediaTypeImage;
+    } else if (!filterContainsImageMediaType && filterContainsVideoMediaType) {
+        return QBImagePickerMediaTypeVideo;
+    }
     return QBImagePickerMediaTypeAny;
 }
 
 - (void)setMediaType:(QBImagePickerMediaType)mediaType {
-    
+    switch (mediaType) {
+        case QBImagePickerMediaTypeImage: {
+            self.assetMediaTypes = @[@(PHAssetMediaTypeImage)];
+            break;
+        }
+        case QBImagePickerMediaTypeVideo: {
+            self.assetMediaTypes = @[@(PHAssetMediaTypeVideo)];
+            break;
+        }
+        default: {
+            self.assetMediaTypes = nil;
+            break;
+        }
+    }
 }
 
 @end

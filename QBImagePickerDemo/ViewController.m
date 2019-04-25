@@ -33,26 +33,27 @@
     
     if (indexPath.section == 1) {
         switch (indexPath.row) {
-            case 1:
+            case 1: {
                 imagePickerController.minimumNumberOfSelection = 3;
                 break;
-                
-            case 2:
+            }
+            case 2: {
                 imagePickerController.maximumNumberOfSelection = 6;
                 break;
-                
-            case 3:
+            }
+            case 3: {
                 imagePickerController.minimumNumberOfSelection = 3;
                 imagePickerController.maximumNumberOfSelection = 6;
                 break;
-
-            case 4:
+            }
+            case 4: {
                 imagePickerController.maximumNumberOfSelection = 2;
                 [imagePickerController.selectedAssets addObject:[PHAsset fetchAssetsWithOptions:nil].lastObject];
                 break;
-                
-            default:
+            }
+            default: {
                 break;
+            }
         }
     }
     

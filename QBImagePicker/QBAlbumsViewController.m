@@ -15,6 +15,9 @@
 // Views
 #import "QBAlbumCell.h"
 
+// Model
+#import "QBAlbumInfo.h"
+
 static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     return CGSizeMake(size.width * scale, size.height * scale);
 }
@@ -23,8 +26,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *doneButton;
 
-@property (nonatomic, copy) NSArray *fetchResults;
-@property (nonatomic, copy) NSArray *assetCollections;
+@property (nonatomic, strong) NSArray<QBAlbumInfo *> *albums;
+@property (nonatomic, strong) NSArray<PHFetchResult *> *fetchResults;
 
 @end
 
@@ -84,7 +87,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 {
     QBAssetsViewController *assetsViewController = segue.destinationViewController;
     assetsViewController.imagePickerController = self.imagePickerController;
-    assetsViewController.assetCollection = self.assetCollections[self.tableView.indexPathForSelectedRow.row];
+    assetsViewController.albumInfo = self.albums[self.tableView.indexPathForSelectedRow.row];
 }
 
 
@@ -155,16 +158,21 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     // Filter albums
     BOOL excludeEmptyCollections = self.imagePickerController.excludeEmptyCollections;
     NSArray *assetCollectionSubtypes = self.imagePickerController.assetCollectionSubtypes;
-    NSMutableDictionary *smartAlbums = [NSMutableDictionary dictionaryWithCapacity:assetCollectionSubtypes.count];
+    PHFetchOptions *assetsFetchOptions = [self.imagePickerController fetchOptionsForAssets];
+    
     NSMutableArray *userAlbums = [NSMutableArray array];
+    NSMutableDictionary *smartAlbums = [NSMutableDictionary dictionaryWithCapacity:assetCollectionSubtypes.count];
     
     for (PHFetchResult *fetchResult in self.fetchResults) {
         [fetchResult enumerateObjectsUsingBlock:^(PHAssetCollection *assetCollection, NSUInteger index, BOOL *stop) {
-            PHAssetCollectionSubtype subtype = assetCollection.assetCollectionSubtype;
+            QBAlbumInfo *albumInfo = [[QBAlbumInfo alloc] init];
+            albumInfo.assetsFetchOptions = assetsFetchOptions;
+            albumInfo.assetCollection = assetCollection;
             
+            PHAssetCollectionSubtype subtype = assetCollection.assetCollectionSubtype;
             if (subtype == PHAssetCollectionSubtypeAlbumRegular) {
-                if (!excludeEmptyCollections || ![self isAssetCollectionEmpty:assetCollection]) {
-                    [userAlbums addObject:assetCollection];
+                if (!excludeEmptyCollections || albumInfo.assetsFetchResult.count > 0) {
+                    [userAlbums addObject:albumInfo];
                 }
             } else if ([assetCollectionSubtypes containsObject:@(subtype)]) {
                 NSMutableArray *smartAlbum = smartAlbums[@(subtype)];
@@ -172,36 +180,22 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
                     smartAlbum = [NSMutableArray array];
                     smartAlbums[@(subtype)] = smartAlbum;
                 }
-                if (!excludeEmptyCollections || ![self isAssetCollectionEmpty:assetCollection]) {
-                    [smartAlbum addObject:assetCollection];
+                if (!excludeEmptyCollections || albumInfo.assetsFetchResult.count > 0) {
+                    [smartAlbum addObject:albumInfo];
                 }
             }
         }];
     }
     
-    NSMutableArray *assetCollections = [NSMutableArray array];
-
-    // Fetch smart albums
+    NSMutableArray<QBAlbumInfo *> *albums = [NSMutableArray array];
     for (NSNumber *assetCollectionSubtype in assetCollectionSubtypes) {
-        NSArray *collections = smartAlbums[assetCollectionSubtype];
-        
-        if (collections) {
-            [assetCollections addObjectsFromArray:collections];
+        NSArray *albumInfos = smartAlbums[assetCollectionSubtype];
+        if (albumInfos) {
+            [albums addObjectsFromArray:albumInfos];
         }
     }
-    
-    // Fetch user albums
-    [userAlbums enumerateObjectsUsingBlock:^(PHAssetCollection *assetCollection, NSUInteger index, BOOL *stop) {
-        [assetCollections addObject:assetCollection];
-    }];
-    
-    self.assetCollections = assetCollections;
-}
-
-- (BOOL)isAssetCollectionEmpty:(PHAssetCollection *)assetCollection {
-    PHFetchOptions *fetchOptions = [self.imagePickerController fetchOptionsForAssets];
-    PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:fetchOptions];
-    return (fetchResult.count < 1);
+    [albums addObjectsFromArray:userAlbums];
+    self.albums = albums;
 }
 
 - (UIImage *)placeholderImageWithSize:(CGSize)size
@@ -283,7 +277,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return self.assetCollections.count;
+    return self.albums.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -293,9 +287,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     cell.borderWidth = 1.0 / [[UIScreen mainScreen] scale];
     
     // Thumbnail
-    PHAssetCollection *assetCollection = self.assetCollections[indexPath.row];
-    PHFetchOptions *fetchOptions = [self.imagePickerController fetchOptionsForAssets];
-    PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:fetchOptions];
+    QBAlbumInfo *albumInfo = self.albums[indexPath.row];
+    PHFetchResult *fetchResult = albumInfo.assetsFetchResult;
     PHImageManager *imageManager = [PHImageManager defaultManager];
     
     if (fetchResult.count >= 3) {
@@ -357,7 +350,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }
     
     // Album title
-    cell.titleLabel.text = assetCollection.localizedTitle;
+    cell.titleLabel.text = albumInfo.assetCollection.localizedTitle;
     
     // Number of photos
     cell.countLabel.text = [NSString stringWithFormat:@"%lu", (long)fetchResult.count];
@@ -389,7 +382,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
             [strongSelf updateAssetCollections];
         }
         
-        // TODO: Use PHFetchResult for each PHAssetCollection do dermine actual changes.
+        // TODO: Use QBAlbumInfo.assetsFetchResult do dermine changes for each collection.
         [strongSelf.tableView reloadData];
     });
 }

@@ -9,11 +9,12 @@
 #import <UIKit/UIKit.h>
 #import <Photos/Photos.h>
 
+@class QBAlbumInfo;
 @class QBImagePickerController;
 
 @interface QBAssetsViewController : UICollectionViewController
 
 @property (nonatomic, weak) QBImagePickerController *imagePickerController;
-@property (nonatomic, strong) PHAssetCollection *assetCollection;
+@property (nonatomic, copy) QBAlbumInfo *albumInfo;
 
 @end

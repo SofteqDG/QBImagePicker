@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		1ACD48CA218DEE7200288636 /* QBGradientView.h in Headers */ = {isa = PBXBuildFile; fileRef = 1ACD48C8218DEE7200288636 /* QBGradientView.h */; };
 		1ACD48CB218DEE7200288636 /* QBGradientView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1ACD48C9218DEE7200288636 /* QBGradientView.m */; };
+		1AF302E12271DD600028A63F /* QBAlbumInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AF302DF2271DD600028A63F /* QBAlbumInfo.h */; };
+		1AF302E22271DD600028A63F /* QBAlbumInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AF302E02271DD600028A63F /* QBAlbumInfo.m */; };
 		790A850F1AE7D4D9008E2A80 /* QBSlomoIconView.h in Headers */ = {isa = PBXBuildFile; fileRef = 790A850D1AE7D4D9008E2A80 /* QBSlomoIconView.h */; };
 		790A85101AE7D4D9008E2A80 /* QBSlomoIconView.m in Sources */ = {isa = PBXBuildFile; fileRef = 790A850E1AE7D4D9008E2A80 /* QBSlomoIconView.m */; };
 		AA3AD06F1ACF9A3A00BF523E /* QBVideoIconView.h in Headers */ = {isa = PBXBuildFile; fileRef = AA3AD06D1ACF9A3A00BF523E /* QBVideoIconView.h */; };
@@ -86,6 +88,8 @@
 		1A238CCA226F70FE00007E4D /* QBImagePickerController+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "QBImagePickerController+Private.h"; sourceTree = "<group>"; };
 		1ACD48C8218DEE7200288636 /* QBGradientView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QBGradientView.h; sourceTree = "<group>"; };
 		1ACD48C9218DEE7200288636 /* QBGradientView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QBGradientView.m; sourceTree = "<group>"; };
+		1AF302DF2271DD600028A63F /* QBAlbumInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QBAlbumInfo.h; sourceTree = "<group>"; };
+		1AF302E02271DD600028A63F /* QBAlbumInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QBAlbumInfo.m; sourceTree = "<group>"; };
 		74BB93661B2CE91A0044EB60 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
 		790A850D1AE7D4D9008E2A80 /* QBSlomoIconView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QBSlomoIconView.h; sourceTree = "<group>"; };
 		790A850E1AE7D4D9008E2A80 /* QBSlomoIconView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QBSlomoIconView.m; sourceTree = "<group>"; };
@@ -165,6 +169,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1AF302E32271DD650028A63F /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1AF302DF2271DD600028A63F /* QBAlbumInfo.h */,
+				1AF302E02271DD600028A63F /* QBAlbumInfo.m */,
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
 		AA3AD0751ACFA22500BF523E /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -226,6 +239,7 @@
 			isa = PBXGroup;
 			children = (
 				AAA8FE081ACDA079002A9710 /* QBImagePicker.h */,
+				1AF302E32271DD650028A63F /* Model */,
 				AA3AD0751ACFA22500BF523E /* Views */,
 				AA3AD0761ACFA23300BF523E /* ViewControllers */,
 				AAF1CA241ACE5665005F6295 /* Resources */,
@@ -327,6 +341,7 @@
 				790A850F1AE7D4D9008E2A80 /* QBSlomoIconView.h in Headers */,
 				AA3AD0731ACFA06700BF523E /* QBVideoIndicatorView.h in Headers */,
 				AAF1CA331ACE6FB5005F6295 /* QBAssetCell.h in Headers */,
+				1AF302E12271DD600028A63F /* QBAlbumInfo.h in Headers */,
 				1ACD48CA218DEE7200288636 /* QBGradientView.h in Headers */,
 				AAF1CA2F1ACE6E46005F6295 /* QBAssetsViewController.h in Headers */,
 				AAF1CA1A1ACE5467005F6295 /* QBAlbumCell.h in Headers */,
@@ -443,6 +458,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 				ja,
@@ -514,6 +530,7 @@
 				AAF1CA1B1ACE5467005F6295 /* QBAlbumCell.m in Sources */,
 				AAA8FE221ACDA090002A9710 /* QBImagePickerController.m in Sources */,
 				AA3AD0741ACFA06700BF523E /* QBVideoIndicatorView.m in Sources */,
+				1AF302E22271DD600028A63F /* QBAlbumInfo.m in Sources */,
 				AAA8FE5C1ACDA554002A9710 /* QBAlbumsViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
